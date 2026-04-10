@@ -1,0 +1,81 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import InteractiveCanvas from '@/components/InteractiveCanvas';
+
+gsap.registerPlugin(ScrollTrigger);
+
+export default function Portfolio() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // WHY: Mengikat animasi ke scroll pengguna (Scrollytelling).
+    // Menggunakan scrub: true artinya tidak ada Scrolljacking; pengguna memegang kendali penuh.
+    
+    // Animasi Teks Hero
+    gsap.to(titleRef.current, {
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      },
+      y: 200,
+      opacity: 0,
+      scale: 0.8,
+      ease: 'none',
+    });
+
+    // Animasi Muncul Kartu Portofolio
+    gsap.fromTo(cardRef.current, 
+      { y: 100, opacity: 0 },
+      {
+        scrollTrigger: {
+          trigger: cardRef.current,
+          start: 'top 80%', // Animasi mulai saat ujung atas kartu mencapai 80% tinggi viewport
+          end: 'top 50%',
+          scrub: true,
+        },
+        y: 0,
+        opacity: 1,
+        ease: 'power2.out',
+      }
+    );
+
+    return () => {
+      // WHY: Mencegah error instance GSAP menumpuk saat pindah navigasi.
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
+  return (
+    <main className="relative w-full">
+      <InteractiveCanvas />
+      
+      {/* Hero Section */}
+      <section ref={containerRef} className="h-screen flex items-center justify-center border-b border-zinc-900">
+        <h1 ref={titleRef} className="text-5xl md:text-8xl font-bold tracking-tighter text-center pointer-events-none mix-blend-difference">
+          SOFTWARE <br />
+          <span className="text-blue-500">ENGINEER.</span>
+        </h1>
+      </section>
+
+      {/* Content Section */}
+      <section className="min-h-screen flex items-center justify-center p-10 bg-black/50 backdrop-blur-sm">
+        <div 
+          ref={cardRef} 
+          className="w-full max-w-2xl p-10 rounded-2xl border border-zinc-800 bg-zinc-950/50"
+        >
+          <h2 className="text-3xl font-bold mb-4">Sistem Skalabilitas Tinggi</h2>
+          <p className="text-zinc-400 leading-relaxed">
+            Sistem tidak dibangun dengan asumsi, melainkan logika. Kode ini didesain untuk mendemonstrasikan perpaduan antara efisiensi algoritma dan manipulasi DOM performa tinggi melalui GSAP, Lenis, dan WebGL Canvas API.
+          </p>
+        </div>
+      </section>
+    </main>
+  );
+}
